@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0c0c0e;
+      --surface:  #141416;
+      --border:   #272730;
+      --text:     #e8e8f0;
+      --muted:    #6b6b80;
+      --accent:   #c8a96e;
+      --accent2:  #e8c98e;
+      --danger:   #e07070;
+      --success:  #70c0a0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Ambient background orbs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 500px; height: 500px;
+      background: #c8a96e;
+      top: -150px; right: -150px;
+    }
+    body::after {
+      width: 400px; height: 400px;
+      background: #6e8ac8;
+      bottom: -120px; left: -120px;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 44px;
+      width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .logo em { font-style: italic; color: var(--accent2); }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 36px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+
+    /* Tab switcher */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 7px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Form fields */
+    .field { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,169,110,0.12);
+    }
+    input::placeholder { color: var(--muted); opacity: 0.5; }
+
+    /* Submit button */
+    .btn {
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #0c0c0e;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Alert message */
+    .alert {
+      display: none;
+      padding: 12px 14px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      margin-top: 18px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .alert.error   { background: rgba(224,112,112,0.12); color: var(--danger);  border: 1px solid rgba(224,112,112,0.25); display: block; }
+    .alert.success { background: rgba(112,192,160,0.12); color: var(--success); border: 1px solid rgba(112,192,160,0.25); display: block; }
+
+    /* Dashboard (shown after login) */
+    #dashboard { display: none; animation: slideUp 0.4s ease both; }
+    .dash-greeting {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: var(--accent2);
+    }
+    .dash-info { font-size: 14px; color: var(--muted); line-height: 1.8; }
+    .dash-info span { color: var(--text); }
+    .logout-btn {
+      margin-top: 28px;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Auth forms -->
+  <div id="auth-section">
+    <div class="logo">key<em>stone</em></div>
+    <div class="subtitle">Secure authentication demo</div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign in</button>
+      <button class="tab-btn"       onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Login form -->
+    <div id="login-form">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="l-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="l-password" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn" onclick="doLogin()">Sign in</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="register-form" class="hidden">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="r-username" placeholder="cooluser" autocomplete="username"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="r-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="r-password" placeholder="min 8 characters" autocomplete="new-password"/>
+      </div>
+      <button class="btn" onclick="doRegister()">Create account</button>
+    </div>
+
+    <div class="alert" id="alert"></div>
+  </div>
+
+  <!-- Dashboard (post-login) -->
+  <div id="dashboard">
+    <div class="dash-greeting">Welcome back 👋</div>
+    <div class="dash-info">
+      Signed in as <span id="d-username"></span><br>
+      Email: <span id="d-email"></span><br>
+      Member since: <span id="d-since"></span>
+    </div>
+    <button class="logout-btn" onclick="doLogout()">Sign out</button>
+  </div>
+
+</div>
+
+<script>
+  let activeTab = 'login';
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+    document.querySelectorAll('.tab-btn').forEach((b, i) =>
+      b.classList.toggle('active', (i === 0) === (tab === 'login'))
+    );
+    clearAlert();
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alert');
+    el.textContent = msg;
+    el.className = 'alert ' + type;
+  }
+  function clearAlert() {
+    const el = document.getElementById('alert');
+    el.className = 'alert';
+    el.textContent = '';
+  }
+
+  async function doRegister() {
+    clearAlert();
+    const username = document.getElementById('r-username').value.trim();
+    const email    = document.getElementById('r-email').value.trim();
+    const password = document.getElementById('r-password').value;
+
+    if (!username || !email || !password)
+      return showAlert('Please fill in all fields.', 'error');
+
+    try {
+      const res  = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert(data.error, 'error');
+      showAlert('Account created! You can now sign in.', 'success');
+      setTimeout(() => switchTab('login'), 1500);
+    } catch {
+      showAlert('Could not reach server.', 'error');
+    }
+  }
+
+  async function doLogin() {
+    clearAlert();
+    const email    = document.getElementById('l-email').value.trim();
+    const password = document.getElementById('l-password').value;
+
+    if (!email || !password) return showAlert('Please fill in all fields.', 'error');
+
+    try {
+      const res  = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return showAlert(data.error, 'error');
+
+      localStorage.setItem('token', data.token);
+      await loadDashboard(data.token);
+    } catch {
+      showAlert('Could not reach server.', 'error');
+    }
+  }
+
+  async function loadDashboard(token) {
+    const res  = await fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } });
+    const user = await res.json();
+
+    document.getElementById('d-username').textContent = user.username;
+    document.getElementById('d-email').textContent    = user.email;
+    document.getElementById('d-since').textContent    = new Date(user.createdAt).toLocaleDateString();
+
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+  }
+
+  function doLogout() {
+    localStorage.removeItem('token');
+    document.getElementById('auth-section').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+    switchTab('login');
+  }
+
+  // Auto-login if token exists
+  (async () => {
+    const token = localStorage.getItem('token');
+    if (token) await loadDashboard(token).catch(doLogout);
+  })();
+</script>
+</body>
+</html>
