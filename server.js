@@ -4,6 +4,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
 
+const cors = require('cors');
+app.use(cors({ origin: 'https://joyful-cat-2e218b.netlify.app/' }));
+
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

@@ -265,7 +265,12 @@
 
 </div>
 
+
+
 <script>
+
+  const API = 'https://hashinghw.onrender.com'; // Render URL
+
   let activeTab = 'login';
 
   function switchTab(tab) {
@@ -299,7 +304,7 @@
       return showAlert('Please fill in all fields.', 'error');
 
     try {
-      const res  = await fetch('/api/register', {
+      const res  = await fetch(API +'/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password })
@@ -321,7 +326,7 @@
     if (!email || !password) return showAlert('Please fill in all fields.', 'error');
 
     try {
-      const res  = await fetch('/api/login', {
+      const res  = await fetch(API +'/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -337,7 +342,7 @@
   }
 
   async function loadDashboard(token) {
-    const res  = await fetch('/api/me', { headers: { Authorization: 'Bearer ' + token } });
+    const res  = await fetch(API +'/api/me', { headers: { Authorization: 'Bearer ' + token } });
     const user = await res.json();
 
     document.getElementById('d-username').textContent = user.username;
